@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>README</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="./github-pandoc.css" />
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#td1">TD1</a>
+<ul>
+<li><a href="#lscpu">lscpu</a></li>
+<li><a href="#produit-matrice-matrice">Produit matrice-matrice</a>
+<ul>
+<li><a href="#effet-de-la-taille-de-la-matrice">Effet de la taille de la matrice</a></li>
+<li><a href="#permutation-des-boucles">Permutation des boucles</a></li>
+<li><a href="#omp-sur-la-meilleure-boucle">OMP sur la meilleure boucle</a></li>
+<li><a href="#produit-par-blocs">Produit par blocs</a></li>
+<li><a href="#bloc-omp">Bloc + OMP</a></li>
+<li><a href="#comparaison-avec-blas-eigen-et-numpy">Comparaison avec BLAS, Eigen et numpy</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#tips">Tips</a></li>
+</ul>
+</nav>
+<h1 id="td1">TD1</h1>
+<p><code>pandoc -s --toc README.md --css=./github-pandoc.css -o README.html</code></p>
+<h2 id="lscpu">lscpu</h2>
+<p><em>lscpu donne des infos utiles sur le processeur : nb core, taille de cache :</em></p>
+<pre><code>Architecture:             x86_64
+  CPU op-mode(s):         32-bit, 64-bit
+CPU(s):                   16
+Vendor ID:                AuthenticAMD
+  Model name:             AMD Ryzen 7 5700G with Radeon Graphics
+  Thread(s) per core:     2
+  Core(s) per socket:     8
+Caches (sum of all):      
+  L1d:                    256 KiB (8 instances)
+  L1i:                    256 KiB (8 instances)
+  L2:                     4 MiB (8 instances)
+  L3:                     16 MiB (1 instance)</code></pre>
+<h2 id="produit-matrice-matrice">Produit matrice-matrice</h2>
+<h3 id="effet-de-la-taille-de-la-matrice">Effet de la taille de la matrice</h3>
+<table>
+<thead>
+<tr class="header">
+<th>n</th>
+<th>MFlops</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1024 (origine)</td>
+<td>175.171</td>
+</tr>
+<tr class="even">
+<td>1023</td>
+<td>842.509</td>
+</tr>
+<tr class="odd">
+<td>1025</td>
+<td>879.537</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><em>Expliquer les résultats.</em></p>
+<p>Quand on utilise une puissance de deux, on risque d’avoir plus de cache misses une fois que le cache est aligné avec la taille de notre tableau.</p>
+<h3 id="permutation-des-boucles">Permutation des boucles</h3>
+<p><em>Expliquer comment est compilé le code (ligne de make ou de gcc) : on aura besoin de savoir l’optim, les paramètres, etc. Par exemple :</em></p>
+<p>La compilation suit trois étapes, chacune compilant des fichiers. La première compile Matrix.o à partir de Matrix.cpp, la deuxième compile ProdMatMat.o, et enfin, on compile TestProductMatrix.exe en effectuant l’édition de liens avec les deux fichiers déjà compilés. Chaque fichier utilise quelques options de compilation : - Wall pour afficher tous les avertissements, - O3 et -O2 pour optimiser la compilation et appliquer des techniques comme l’élimination de code mort (dead code elimination) à la compilation, - l’inclusion de la bibliothèque OpenMP avec -fopenmp.</p>
+<p><code>make TestProduct.exe &amp;&amp; ./TestProduct.exe 1024</code></p>
+<table>
+<thead>
+<tr class="header">
+<th>ordre</th>
+<th>time(n=1024)</th>
+<th>MFlops(n=1024)</th>
+<th>time(n=2048)</th>
+<th>MFlops(n=2048)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>i,k,j (origine)</td>
+<td>12.2594</td>
+<td>175.171</td>
+<td>78.3279</td>
+<td>219.333</td>
+</tr>
+<tr class="even">
+<td>j,i,k</td>
+<td>4.99392</td>
+<td>430.019</td>
+<td>45.8338</td>
+<td>374.829</td>
+</tr>
+<tr class="odd">
+<td>i,j,k</td>
+<td>5.936</td>
+<td>361.773</td>
+<td>50.0</td>
+<td>343.0</td>
+</tr>
+<tr class="even">
+<td>k,i,j</td>
+<td>12.2558</td>
+<td>175.222</td>
+<td>78.0</td>
+<td>219.5</td>
+</tr>
+<tr class="odd">
+<td>j,k,i</td>
+<td>0.392697</td>
+<td>5468.55</td>
+<td>3.0</td>
+<td>5734.0</td>
+</tr>
+<tr class="even">
+<td>k,j,i</td>
+<td>0.435486</td>
+<td>4931.24</td>
+<td>3.5</td>
+<td>4915.0</td>
+</tr>
+</tbody>
+</table>
+<p><em>Discuter les résultats.</em> Lorsqu’on itère de manière à accéder successivement à des espaces mémoire déjà récupérés et facilement accessibles par le cache, on réduit le nombre de cache misses, ce qui permet au code de s’exécuter plus rapidement.</p>
+<h3 id="omp-sur-la-meilleure-boucle">OMP sur la meilleure boucle</h3>
+<p><code>make TestProduct.exe &amp;&amp; OMP_NUM_THREADS=8 ./TestProduct.exe 1024</code></p>
+<table>
+<thead>
+<tr class="header">
+<th>OMP_NUM</th>
+<th>MFlops(n=512)</th>
+<th>MFlops(n=1024)</th>
+<th>MFlops(n=2048)</th>
+<th>MFlops(n=4096)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>5265.9</td>
+<td>4968.36</td>
+<td>4434.46</td>
+<td>4506.01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>10327.7</td>
+<td>10322.9</td>
+<td>8415.52</td>
+<td>8222.67</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>14865.8</td>
+<td>14677.2</td>
+<td>11155.3</td>
+<td>10888.2</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>14219.1</td>
+<td>14486.3</td>
+<td>13060.7</td>
+<td>12947.5</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>14514.8</td>
+<td>16872.3</td>
+<td>15441.9</td>
+<td>13138.4</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>16991</td>
+<td>15889.3</td>
+<td>17179.6</td>
+<td>13415.7</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>14247</td>
+<td>16070.4</td>
+<td>18814.1</td>
+<td>13389.1</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>15842.9</td>
+<td>17954.1</td>
+<td>17651.2</td>
+<td>14079</td>
+</tr>
+</tbody>
+</table>
+<p><em>Tracer les courbes de speedup (pour chaque valeur de n), discuter les résultats.</em> Les performances augmentent avec OMP_NUM, mais pas toujours linéairement. Pour n = 512, les performances stagnent après OMP_NUM = 6, probablement à cause de la surcharge de gestion des threads et de la contention du cache. Pour n = 2048 et n = 4096, l’évolution est plus progressive, indiquant une meilleure efficacité de la parallélisation sur des matrices plus grandes. <img src="./Figure_1.png" alt="Speedup Curve" /></p>
+<h3 id="produit-par-blocs">Produit par blocs</h3>
+<p><code>make TestProduct.exe &amp;&amp; ./TestProduct.exe 1024</code></p>
+<table>
+<thead>
+<tr class="header">
+<th>szBlock</th>
+<th>MFlops(n=512)</th>
+<th>MFlops(n=1024)</th>
+<th>MFlops(n=2048)</th>
+<th>MFlops(n=4096)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>origine (=max)</td>
+<td>5265.9</td>
+<td>3980.95</td>
+<td>3717.91</td>
+<td>3910.36</td>
+</tr>
+<tr class="even">
+<td>32</td>
+<td>9989.61</td>
+<td>14031.3</td>
+<td>6987.29</td>
+<td>3934.86</td>
+</tr>
+<tr class="odd">
+<td>64</td>
+<td>7683.91</td>
+<td>13525.3</td>
+<td>6418.89</td>
+<td>4046.77</td>
+</tr>
+<tr class="even">
+<td>128</td>
+<td>8485.61</td>
+<td>11474.6</td>
+<td>7140.02</td>
+<td>5174.03</td>
+</tr>
+<tr class="odd">
+<td>256</td>
+<td>5985.11</td>
+<td>10083.8</td>
+<td>10149.1</td>
+<td>6328.95</td>
+</tr>
+<tr class="even">
+<td>512</td>
+<td>3612.09</td>
+<td>7734.62</td>
+<td>8902.84</td>
+<td>8740.43</td>
+</tr>
+<tr class="odd">
+<td>1024</td>
+<td>X</td>
+<td>3980.95</td>
+<td>6015.82</td>
+<td>8970.8</td>
+</tr>
+</tbody>
+</table>
+<p><em>Discuter les résultats.</em> Les performances varient en fonction de szBlock. Pour n = 512, un bloc de taille 32 maximise les MFlops, mais pour n = 1024 et n = 2048, la meilleure performance est obtenue avec szBlock = 128 ou 256. Pour n = 4096, les performances augmentent avec szBlock, atteignant un maximum à szBlock = 1024. Cela suggère que les petites matrices bénéficient d’un blocage fin, tandis que les grandes matrices tirent parti de blocs plus grands pour une meilleure localité mémoire.</p>
+<h3 id="bloc-omp">Bloc + OMP</h3>
+<table>
+<thead>
+<tr class="header">
+<th>szBlock</th>
+<th>OMP_NUM</th>
+<th>MFlops(n=512)</th>
+<th>MFlops(n=1024)</th>
+<th>MFlops(n=2048)</th>
+<th>MFlops(n=4096)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1024</td>
+<td>1</td>
+<td>X</td>
+<td>3980.95</td>
+<td>6015.82</td>
+<td>8970.8</td>
+</tr>
+<tr class="even">
+<td>1024</td>
+<td>8</td>
+<td>X</td>
+<td>13616.5</td>
+<td>15538</td>
+<td>13770.5</td>
+</tr>
+<tr class="odd">
+<td>512</td>
+<td>1</td>
+<td>3987.64</td>
+<td>3740.37</td>
+<td>3035.49</td>
+<td>2527.98</td>
+</tr>
+<tr class="even">
+<td>512</td>
+<td>8</td>
+<td>10862.8</td>
+<td>11210.9</td>
+<td>13304.6</td>
+<td>12971.9</td>
+</tr>
+</tbody>
+</table>
+<p><em>Discuter les résultats.</em> L’ajout de l’OMP améliore significativement les performances. Pour szBlock = 1024, passer de OMP_NUM = 1 à OMP_NUM = 8 multiplie presque par 3 les MFlops, montrant une bonne scalabilité. Avec szBlock = 512, l’amélioration est également notable, mais les performances restent inférieures à celles de szBlock = 1024 pour n = 2048 et n = 4096. Cela suggère que de grandes tailles de blocs couplées à un parallélisme élevé optimisent mieux l’utilisation du cache et la charge des threads.</p>
+<h3 id="comparaison-avec-blas-eigen-et-numpy">Comparaison avec BLAS, Eigen et numpy</h3>
+<h4 id="blas-prodmatmatblas.cpp">BLAS (ProdMatMatBLAS.cpp)</h4>
+<p><code>Time taken: 0.0638655 seconds</code></p>
+<h4 id="eigen">Eigen</h4>
+<p><code>Time taken: 0.0135848 seconds</code></p>
+<h4 id="numpy">Numpy</h4>
+<div class="sourceCode" id="cb2"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="im">import</span> time</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>dim <span class="op">=</span> <span class="dv">512</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>A <span class="op">=</span> np.random.rand(dim, dim)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>B <span class="op">=</span> np.random.rand(dim, dim)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>start_time <span class="op">=</span> time.time()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>C <span class="op">=</span> np.dot(A, B)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>end_time <span class="op">=</span> time.time()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="bu">print</span>(<span class="st">&quot;Matrix multiplication using NumPy completed.&quot;</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a><span class="bu">print</span>(<span class="ss">f&quot;Time taken: </span><span class="sc">{</span>end_time <span class="op">-</span> start_time<span class="sc">}</span><span class="ss"> seconds&quot;</span>)</span></code></pre></div>
+<p><code>Time taken: 0.036458492279052734 seconds</code></p>
+<h1 id="tips">Tips</h1>
+<pre><code>    env
+    OMP_NUM_THREADS=4 ./produitMatriceMatrice.exe</code></pre>
+<pre><code>    $ for i in $(seq 1 4); do elap=$(OMP_NUM_THREADS=$i ./TestProductOmp.exe|grep &quot;Temps CPU&quot;|cut -d &quot; &quot; -f 7); echo -e &quot;$i\t$elap&quot;; done &gt; timers.out</code></pre>
+</body>
+</html>

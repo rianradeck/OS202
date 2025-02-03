@@ -2,7 +2,7 @@ include Make_linux.inc
 #include Make_msys2.inc
 #include Make_osx.inc
 
-CXXFLAGS = -std=c++14
+CXXFLAGS = -std=c++17
 ifdef DEBUG
 CXXFLAGS += -g -O0 -Wall -fbounds-check -pedantic -D_GLIBCXX_DEBUG
 CXXFLAGS2 = CXXFLAGS
@@ -11,7 +11,7 @@ CXXFLAGS2 = ${CXXFLAGS} -O2 -march=native -Wall
 CXXFLAGS += -O3 -march=native -Wall
 endif
 
-ALL= calcul_pi.exe TestProductMatrix.exe test_product_matrice_blas.exe 
+ALL= calcul_pi.exe TestProductMatrix.exe test_product_matrice_blas.exe ProdMatMatBLAS.exe ProdMatMatEigen.exe
 
 default:	help
 
@@ -30,7 +30,13 @@ TestProductMatrix.exe : TestProductMatrix.o Matrix.hpp Matrix.o ProdMatMat.o
 	$(CXX) $(CXXFLAGS2) $^ -o $@ $(LIB)	
 
 test_product_matrice_blas.exe : test_product_matrice_blas.o Matrix.hpp Matrix.o
-	$(CXX) $(CXXFLAGS2) $^ -o $@ $(LIB)	$(BLAS)
+	$(CXX) $(CXXFLAGS2) $^ -o $@ $(LIB) $(BLAS)
+
+ProdMatMatBLAS.exe: ProdMatMatBLAS.o
+	$(CXX) $(CXXFLAGS2) $^ -o $@ -lblas
+
+ProdMatMatEigen.exe: ProdMatMatEigen.o
+	$(CXX) $(CXXFLAGS2) $^ -o $@ 
 
 help:
 	@echo "Available targets : "
