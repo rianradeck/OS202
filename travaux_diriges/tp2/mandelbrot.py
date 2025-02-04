@@ -5,7 +5,7 @@ from PIL import Image
 from math import log
 from time import time
 import matplotlib.cm
-
+from mpi4py import MPI
 
 @dataclass
 class MandelbrotSet:
@@ -53,19 +53,44 @@ width, height = 1024, 1024
 
 scaleX = 3./width
 scaleY = 2.25/height
-convergence = np.empty((width, height), dtype=np.double)
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+# Each process will handle a portion of the image
+rows_per_process = height // size + (height % size > rank)
+start_row = rank * rows_per_process
+end_row = start_row + rows_per_process
+
+# Initialize the convergence array for each process
+local_convergence = np.empty((end_row - start_row, width), dtype=np.double)
+
 # Calcul de l'ensemble de mandelbrot :
 deb = time()
-for y in range(height):
+for y in range(start_row, end_row):
     for x in range(width):
-        c = complex(-2. + scaleX*x, -1.125 + scaleY * y)
-        convergence[x, y] = mandelbrot_set.convergence(c, smooth=True)
+        c = complex(-2. + scaleX * x, -1.125 + scaleY * y)
+        local_convergence[y - start_row, x] = mandelbrot_set.convergence(c, smooth=True)
 fin = time()
-print(f"Temps du calcul de l'ensemble de Mandelbrot : {fin-deb}")
+print(f"Process {rank}: Temps du calcul de l'ensemble de Mandelbrot : {fin-deb}")
 
-# Constitution de l'image résultante :
-deb = time()
-image = Image.fromarray(np.uint8(matplotlib.cm.plasma(convergence.T)*255))
-fin = time()
-print(f"Temps de constitution de l'image : {fin-deb}")
-image.show()
+convergences = None
+if rank == 0:
+    convergences = np.empty((height, width), dtype=np.double)
+
+print(rank, local_convergence.shape)
+
+comm.Gather(local_convergence, convergences, root=0)
+
+if rank == 0:
+    print(convergences.shape)
+    # Constitution de l'image résultante :
+    deb = time()
+    image = Image.fromarray(np.uint8(matplotlib.cm.plasma(convergences)*255))
+    fin = time()
+    print(f"Temps de constitution de l'image : {fin-deb}")
+    image.save("mandelbrot.png")
+
+image = Image.fromarray(np.uint8(matplotlib.cm.plasma(local_convergence)*255))
+image.save(f"threads/local_mandelbrot_{rank}.png")
