@@ -24,6 +24,11 @@ On itère ensuite pour étudier la façon dont évolue la population des cellule
 import pygame  as pg
 import numpy   as np
 
+from mpi4py import MPI
+
+globCom = MPI.COMM_WORLD
+nbp     = globCom.size
+rank    = globCom.rank
 
 class Grille:
     """
@@ -137,15 +142,21 @@ if __name__ == '__main__':
 
     loop = True
     while loop:
-        #time.sleep(0.1) # A régler ou commenter pour vitesse maxi
-        t1 = time.time()
-        diff = grid.compute_next_iteration()
-        t2 = time.time()
-        appli.draw()
-        t3 = time.time()
+        # time.sleep(0.1) # A régler ou commenter pour vitesse maxi
+        if rank == 1:
+            # t1 = time.time()
+            diff = grid.compute_next_iteration()
+            globCom.send(grid, dest=0, tag=0)
+            print("sent")
+            # t2 = time.time()
+        if rank == 0:
+            appli.grid = globCom.recv(source=1, tag=0)
+            appli.draw()
+            print("received")
+            # t3 = time.time()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 loop = False
-        print(f"Temps calcul prochaine generation : {t2-t1:2.2e} secondes, temps affichage : {t3-t2:2.2e} secondes\r", end='')
+        # print(f"Temps calcul prochaine generation : {t2-t1:2.2e} secondes, temps affichage : {t3-t2:2.2e} secondes\r", end='')
 
 pg.quit()
