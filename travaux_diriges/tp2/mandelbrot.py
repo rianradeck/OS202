@@ -59,38 +59,59 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 # Each process will handle a portion of the image
-rows_per_process = height // size + (height % size > rank)
-start_row = rank * rows_per_process
-end_row = start_row + rows_per_process
+# rows_per_process = np.ceil(height / size).astype(int)
+# start_row = rank * rows_per_process
+# end_row = min(start_row + rows_per_process, height)
+rows_to_compute = [i for i in range(height) if i % size == rank]
 
 # Initialize the convergence array for each process
-local_convergence = np.empty((end_row - start_row, width), dtype=np.double)
+local_convergence = np.empty((len(rows_to_compute), width), dtype=np.double)
 
 # Calcul de l'ensemble de mandelbrot :
 deb = time()
-for y in range(start_row, end_row):
+for i, y in enumerate(rows_to_compute):
     for x in range(width):
         c = complex(-2. + scaleX * x, -1.125 + scaleY * y)
-        local_convergence[y - start_row, x] = mandelbrot_set.convergence(c, smooth=True)
+        local_convergence[i, x] = mandelbrot_set.convergence(c, smooth=True)
 fin = time()
 print(f"Process {rank}: Temps du calcul de l'ensemble de Mandelbrot : {fin-deb}")
 
 convergences = None
+count = None
+computed_rows = None
 if rank == 0:
-    convergences = np.empty((height, width), dtype=np.double)
-
-print(rank, local_convergence.shape)
-
-comm.Gather(local_convergence, convergences, root=0)
+    convergences = np.zeros((height, width), dtype=np.double)
+    computed_rows = [len([i for i in range(height) if i % size == _rank]) for _rank in range(size)]
+    count = np.array(computed_rows, dtype=np.int32) * width
+    print(computed_rows)
+    
+# print(rank, rows_to_compute, local_convergence.shape)
 
 if rank == 0:
+    seq = [[i for i in range(height) if i % size == _rank] for _rank in range(size)]
+    
+    flattened_seq = np.concatenate([np.array(seq[_rank]) for _rank in range(size)])
+    print(flattened_seq)
+    print(local_convergence.shape, convergences.shape, count)
+
+comm.Gatherv(local_convergence, [convergences, count], root=0)
+
+if rank == 0:
+    unscrambled_convergence = np.zeros((height, width), dtype=np.double)
+    offset = 0
+    block = 0
+    for i in range(height):
+        unscrambled_convergence[flattened_seq[i]] = convergences[i]
+    
     print(convergences.shape)
     # Constitution de l'image résultante :
     deb = time()
-    image = Image.fromarray(np.uint8(matplotlib.cm.plasma(convergences)*255))
+    image = Image.fromarray(np.uint8(matplotlib.cm.plasma(unscrambled_convergence)*255))
+    _image = Image.fromarray(np.uint8(matplotlib.cm.plasma(convergences)*255))
     fin = time()
     print(f"Temps de constitution de l'image : {fin-deb}")
-    image.save("mandelbrot.png")
+    image.save("uns_mandelbrot.png")
+    _image.save("mandelbrot.png")
 
 image = Image.fromarray(np.uint8(matplotlib.cm.plasma(local_convergence)*255))
 image.save(f"threads/local_mandelbrot_{rank}.png")
